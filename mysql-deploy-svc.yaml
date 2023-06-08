@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-mysql
+  labels:
+    app: nextcloud-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud-mysql
+  template:
+    metadata:
+      labels:
+        app: nextcloud-mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:latest
+          envFrom:
+            - secretRef:
+                name: nextcloud-mysql
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-persistent-storage
+      volumes:
+        - name: mysql-persistent-storage
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextcloud-mysql
+  labels:
+    app: nextcloud-mysql
+spec:
+  selector:
+    app: nextcloud-mysql
+  ports:
+    - name: mysql
+      port: 3306
